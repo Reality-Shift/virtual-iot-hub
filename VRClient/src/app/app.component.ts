@@ -1,6 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
-import { Engine } from 'babylonjs';
+import { Engine, Vector2 } from 'babylonjs';
+import 'babylonjs-gui';
+import { IotDeviceUI } from './models/IotDeviceUI';
+import { DeviceValueData } from './models/DeviceValueData';
 
 
 @Component({
@@ -17,9 +20,13 @@ export class AppComponent implements OnInit {
     const engine = new Engine(canvas, true);
 
     const scene = new BABYLON.Scene(engine);
+    scene.debugLayer.show();
+
+    const guiRoot = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui');
+
 
     // Add a camera to the scene and attach it to the canvas
-    const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 2, Math.PI / 2, 2, BABYLON.Vector3.Zero(), scene);
+    const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), scene);
     camera.attachControl(canvas, true);
 
     // Add lights to the scene
@@ -30,11 +37,20 @@ export class AppComponent implements OnInit {
     // Add and manipulate meshes in the scene
     const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { diameter: 2 }, scene);
 
+    const deviceUI = new IotDeviceUI(guiRoot, sphere);
+    deviceUI.name = 'Sphere #1337';
+    deviceUI.type = 'Shpere';
 
+    const testValues = new DeviceValueData();
+    testValues.type = 'rotation';
+    testValues.data = 123;
 
+    deviceUI.setDeviceData(testValues);
 
-
-
+    const anotherValues = new DeviceValueData();
+    anotherValues.type = 'position';
+    anotherValues.data = '1, 2, 0';
+    deviceUI.setDeviceData(anotherValues);
 
     // -------------
     engine.runRenderLoop(function () { // Register a render loop to repeatedly render the scene

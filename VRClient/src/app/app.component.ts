@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
     const engine = new Engine(canvas, true);
 
     this.scene = new BABYLON.Scene(engine);
+    this.scene.debugLayer.show();
     const guiRoot = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui');
     // Add a camera to the scene and attach it to the canvas
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), this.scene);
@@ -35,6 +36,7 @@ export class AppComponent implements OnInit {
     light2.position.y += 4;
     // Add and manipulate meshes in the scene
     const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { diameter: 2 }, this.scene);
+    sphere.position.y += 20;
     const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, this.scene);
 
     const deviceUI = new IotDeviceUI(guiRoot, sphere);
@@ -54,8 +56,13 @@ export class AppComponent implements OnInit {
     // -------------
     engine.runRenderLoop(() => { // Register a render loop to repeatedly render the scene
       this.scene.render();
-      this.controllerL.renderForwardLine();
-      this.controllerR.renderForwardLine();
+      if (this.controllerL) {
+        this.controllerL.renderForwardLine();
+      }
+      if (this.controllerR) {
+        this.controllerR.renderForwardLine();
+      }
+      //  this.controllerR.renderForwardLine();
       // light2.position = camera.position.clone();
     });
     window.addEventListener('resize', () => { // Watch for browser/canvas resize events
@@ -66,13 +73,13 @@ export class AppComponent implements OnInit {
   private importControllersMeshes() {
 
 
-// trigger,trigger,track,track,body,body
+    // trigger,trigger,track,track,body,body
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerR.obj', this.scene, sc => {
       this.controllerR = new CustomController(
-          sc.filter(s => s.name === 'trigger')[1],
-          sc.filter(s => s.name === 'track')[1],
-          sc.filter(s => s.name === 'body')[1],
-          sc.filter(s => s.name === 'aim')[1]);
+        sc.filter(s => s.name === 'trigger')[1],
+        sc.filter(s => s.name === 'track')[1],
+        sc.filter(s => s.name === 'body')[1],
+        sc.filter(s => s.name === 'aim')[1], this.scene);
       console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
       console.log('success');
@@ -83,7 +90,7 @@ export class AppComponent implements OnInit {
         sc.filter(s => s.name === 'trigger')[1],
         sc.filter(s => s.name === 'track')[1],
         sc.filter(s => s.name === 'body')[1],
-        sc.filter(s => s.name === 'aim')[1]);
+        sc.filter(s => s.name === 'aim')[1], this.scene);
       this.controllerL.position.y += 5;
       console.log('success');
     }, fail => console.log(fail));

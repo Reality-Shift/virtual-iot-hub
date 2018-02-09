@@ -54,6 +54,8 @@ export class AppComponent implements OnInit {
     // -------------
     engine.runRenderLoop(() => { // Register a render loop to repeatedly render the scene
       this.scene.render();
+      this.controllerL.renderForwardLine();
+      this.controllerR.renderForwardLine();
       // light2.position = camera.position.clone();
     });
     window.addEventListener('resize', () => { // Watch for browser/canvas resize events
@@ -62,15 +64,26 @@ export class AppComponent implements OnInit {
   }
 
   private importControllersMeshes() {
+
+
+// trigger,trigger,track,track,body,body
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerR.obj', this.scene, sc => {
-      this.controllerR = new CustomController(sc[1], sc[3], sc[5]);
+      this.controllerR = new CustomController(
+          sc.filter(s => s.name === 'trigger')[1],
+          sc.filter(s => s.name === 'track')[1],
+          sc.filter(s => s.name === 'body')[1],
+          sc.filter(s => s.name === 'aim')[1]);
       console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
       console.log('success');
     }, fail => console.log(fail));
 
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerL.obj', this.scene, sc => {
-      this.controllerL = new CustomController(sc[1], sc[3], sc[5]);
+      this.controllerL = new CustomController(
+        sc.filter(s => s.name === 'trigger')[1],
+        sc.filter(s => s.name === 'track')[1],
+        sc.filter(s => s.name === 'body')[1],
+        sc.filter(s => s.name === 'aim')[1]);
       this.controllerL.position.y += 5;
       console.log('success');
     }, fail => console.log(fail));

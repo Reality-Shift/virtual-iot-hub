@@ -1,14 +1,16 @@
 import { AbstractMesh } from 'babylonjs';
-import { Mesh, MeshBuilder, Vector3, WebVRController, Vector2 } from 'babylonjs-loaders';
+import { Mesh, MeshBuilder, Vector3, WebVRController, Vector2, LinesMesh } from 'babylonjs-loaders';
 
 export class CustomController {
 
     public attacher: Mesh;
+    private lines: LinesMesh;
 
     constructor(
         private trigger: AbstractMesh,
         private track: AbstractMesh,
-        private body: AbstractMesh
+        private body: AbstractMesh,
+        private aim: AbstractMesh
     ) {
         this.attacher = MeshBuilder.CreateBox('attacher', { size: 0.1 });
         body.parent = this.attacher;
@@ -18,6 +20,10 @@ export class CustomController {
             this.scale(0.003);
             // this.attacher.rotate(Vector3.Forward(), Math.PI);
         }, 500);
+        this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
+            points: [Vector3.Zero(), Vector3.Up()],
+            updatable: true, instance: this.lines
+        });
     }
     public scale(scale: number): void {
         this.attacher.scaling = this.attacher.scaling.scale(scale);
@@ -36,5 +42,12 @@ export class CustomController {
         controller.onTriggerStateChangedObservable.add((ED, ES) => {
             this.trigger.position.z = ED.value * 5;
         });
+    }
+
+    renderForwardLine(): void {
+        // this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
+        //     points: [this., Vector3.Up()],
+        //     updatable: true, instance: this.lines
+        // });
     }
 }

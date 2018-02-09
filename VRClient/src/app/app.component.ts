@@ -1,10 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
-import { Engine, Vector2 } from 'babylonjs';
 import 'babylonjs-gui';
-import { IotDeviceUI } from './models/IotDeviceUI';
-import { DeviceValueData } from './models/DeviceValueData';
-
+import 'babylonjs-loaders';
+import { Vector2 } from 'babylonjs-loaders';
+import { CustomController } from './models/CustomController';
 
 @Component({
   selector: 'app-root',
@@ -13,53 +12,64 @@ import { DeviceValueData } from './models/DeviceValueData';
 })
 export class AppComponent implements OnInit {
   @ViewChild('canva') canvasEl: ElementRef;
+  controllerR: CustomController;
+  controllerL: CustomController;
 
+  scene: Scene;
 
   ngOnInit(): void {
     const canvas = this.canvasEl.nativeElement;
     const engine = new Engine(canvas, true);
 
     const scene = new BABYLON.Scene(engine);
-    scene.debugLayer.show();
-
     const guiRoot = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui');
-
-
     // Add a camera to the scene and attach it to the canvas
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), scene);
     camera.attachControl(canvas, true);
 
     // Add lights to the scene
     const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1, 1, 0), scene);
-    const light2 = new BABYLON.PointLight('light2', new BABYLON.Vector3(0, 1, -1), scene);
-
-
+    const light2 = new BABYLON.PointLight('light2', new BABYLON.Vector3(0, 0, 0), scene);
+    light2.position.y += 4;
     // Add and manipulate meshes in the scene
     const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { diameter: 2 }, scene);
+    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, scene);
 
     const deviceUI = new IotDeviceUI(guiRoot, sphere);
     deviceUI.name = 'Sphere #1337';
     deviceUI.type = 'Shpere';
 
-    const testValues = new DeviceValueData();
-    testValues.type = 'rotation';
-    testValues.data = 123;
+    this.importControllersMeshes();
 
-    deviceUI.setDeviceData(testValues);
-
-    const anotherValues = new DeviceValueData();
-    anotherValues.type = 'position';
-    anotherValues.data = '1, 2, 0';
-    deviceUI.setDeviceData(anotherValues);
-
+    const exp = scene.createDefaultVRExperience({ controllerMeshes: false });
+    // exp.enterVR();
+    exp.onEnteringVR.add((E, S) => {
+      E.webVRCamera.onControllersAttachedObservable.add(ED => {
+        E.webVRCamera.leftController.attachToMesh(this.controllerL.attacher);
+        E.webVRCamera.rightController.attachToMesh(this.controllerR.attacher);
+      });
+    });
     // -------------
     engine.runRenderLoop(function () { // Register a render loop to repeatedly render the scene
       scene.render();
+      // light2.position = camera.position.clone();
     });
     window.addEventListener('resize', function () { // Watch for browser/canvas resize events
       engine.resize();
     });
   }
 
+  private importControllersMeshes() {
+    SceneLoader.ImportMesh('', './assets/controllers/', 'controllerR.obj', this.scene, sc => {
+      this.controllerR = new CustomController(sc[1], sc[3], sc[5]);
+      this.controllerR.position.y += 10;
+      console.log('success');
+    }, fail => console.log(fail));
 
+    SceneLoader.ImportMesh('', './assets/controllers/', 'controllerL.obj', this.scene, sc => {
+      this.controllerL = new CustomController(sc[1], sc[3], sc[5]);
+      this.controllerL.position.y += 5;
+      console.log('success');
+    }, fail => console.log(fail));
+  }
 }

@@ -1,14 +1,14 @@
 import { AbstractMesh } from 'babylonjs';
-import { Mesh, MeshBuilder, Vector3 } from 'babylonjs-loaders';
+import { Mesh, MeshBuilder, Vector3, WebVRController, Vector2 } from 'babylonjs-loaders';
 
 export class CustomController {
 
     public attacher: Mesh;
 
     constructor(
-        private body: AbstractMesh,
+        private trigger: AbstractMesh,
         private track: AbstractMesh,
-        private trigger: AbstractMesh
+        private body: AbstractMesh
     ) {
         this.attacher = MeshBuilder.CreateBox('attacher', { size: 0.1 });
         body.parent = this.attacher;
@@ -29,5 +29,12 @@ export class CustomController {
 
     public set position(position: Vector3) {
         this.attacher.position = position;
+    }
+
+    public initFromController(controller: WebVRController): void {
+        controller.attachToMesh(this.attacher);
+        controller.onTriggerStateChangedObservable.add((ED, ES) => {
+            this.trigger.position.z = ED.value * 5;
+        });
     }
 }

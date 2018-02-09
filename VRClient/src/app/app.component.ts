@@ -42,8 +42,8 @@ export class AppComponent implements OnInit {
     // exp.enterVR();
     exp.onEnteringVR.add((E, S) => {
       E.webVRCamera.onControllersAttachedObservable.add(ED => {
-        E.webVRCamera.leftController.attachToMesh(this.controllerL.attacher);
-        E.webVRCamera.rightController.attachToMesh(this.controllerR.attacher);
+        this.controllerL.initFromController(E.webVRCamera.leftController);
+        this.controllerR.initFromController(E.webVRCamera.rightController);
       });
     });
     // -------------
@@ -59,6 +59,7 @@ export class AppComponent implements OnInit {
   private importControllersMeshes() {
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerR.obj', this.scene, sc => {
       this.controllerR = new CustomController(sc[1], sc[3], sc[5]);
+      console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
       console.log('success');
     }, fail => console.log(fail));

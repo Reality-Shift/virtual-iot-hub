@@ -6,6 +6,7 @@ import { Vector2 } from 'babylonjs-loaders';
 import { CustomController } from './models/CustomController';
 import { Scene, Engine, SceneLoader } from 'babylonjs';
 import { IotDeviceUI } from './models/IotDeviceUI';
+import * as io from 'socket.io-client';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,8 @@ export class AppComponent implements OnInit {
 
   scene: Scene;
 
+  devices: Map<string, IotDeviceUI> = new Map<string, IotDeviceUI>();
+
   ngOnInit(): void {
     const canvas = this.canvasEl.nativeElement;
     const engine = new Engine(canvas, true);
@@ -28,6 +31,19 @@ export class AppComponent implements OnInit {
     // Add a camera to the scene and attach it to the canvas
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), this.scene);
     camera.attachControl(canvas, true);
+
+    const socketConnection = io('http://localhost:1337');
+    socketConnection.on('connect', () => {
+      console.log('connected');
+      socketConnection.emit('login', {
+        type: 'vr',
+        room: 'test'
+      });
+    });
+
+    socketConnection.on('error', errorData => {
+      console.log('Error: ' + errorData.err);
+    });
 
     // Add lights to the scene
     const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1, 1, 0), this.scene);

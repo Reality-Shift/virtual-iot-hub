@@ -1,6 +1,7 @@
 import { AbstractMesh, CustomMaterial, Scene, Color3, Ray } from 'babylonjs';
 import { Mesh, MeshBuilder, Vector3, WebVRController, Vector2, LinesMesh } from 'babylonjs-loaders';
 import 'babylonjs-materials';
+import { PickingInfo } from 'babylonjs-materials';
 
 export class CustomController {
 
@@ -8,13 +9,14 @@ export class CustomController {
     private lines: LinesMesh;
     private raySph: Mesh;
     private raySph2: Mesh;
-
+    private pressed = false;
     constructor(
         private trigger: AbstractMesh,
         private track: AbstractMesh,
         private body: AbstractMesh,
         private aim: AbstractMesh,
-        private scene: Scene
+        private scene: Scene,
+        private teleportFunc: any
     ) {
         this.attacher = MeshBuilder.CreateBox('attacher', { size: 0.1 });
         body.parent = this.attacher;
@@ -33,8 +35,8 @@ export class CustomController {
 
         // ---------
 
-        const sph = MeshBuilder.CreateSphere('reycastSph', {segments: 10, diameter: 5}, scene);
-        const raySph2 = MeshBuilder.CreateSphere('reycastSph', {segments: 10, diameter: 5}, scene);
+        const sph = MeshBuilder.CreateSphere('reycastSph', { segments: 10, diameter: 5 }, scene);
+        const raySph2 = MeshBuilder.CreateSphere('reycastSph', { segments: 10, diameter: 5 }, scene);
         sph.parent = this.attacher;
         raySph2.parent = this.attacher;
         sph.position.z -= 25;
@@ -59,14 +61,38 @@ export class CustomController {
         controller.onTriggerStateChangedObservable.add((ED, ES) => {
             this.trigger.position.z = ED.value * 5;
         });
+        controller.onButtonStateChange((CI, BI, State) => {
+            if (BI === 4 && State.pressed) {
+                this.pressed = true;
+            }
+            if (BI === 4 && !State.pressed && this.pressed) {
+                this.pressed = false;
+                this.teleport();
+            }
+        });
     }
 
-    renderForwardLine(): void {
+    teleport() {
+        const hit = this.getHit();
+        if (hit.hit) {
+            this.teleportFunc(hit.pickedPoint);
+        }
+    }
+    getHit(): PickingInfo {
         const direction = this.raySph2.absolutePosition.subtract(this.raySph.absolutePosition);
         const ray = new Ray(this.raySph2.absolutePosition, direction);
-        const hit = this.scene.pickWithRay(ray, m => m.name !== 'reycastSph');
+        return this.scene.pickWithRay(ray, m => m.name !== 'reycastSph');
+    }
+    renderForwardLine(): void {
+        if (!this.pressed) {
+            this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
+                points: [this.raySph.absolutePosition, this.raySph2.absolutePosition],
+                updatable: true, instance: this.lines
+            });
+            return;
+        }
+        const hit = this.getHit();
         if (hit.hit) {
-
             this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
                 points: [this.raySph.absolutePosition, hit.pickedPoint],
                 updatable: true, instance: this.lines

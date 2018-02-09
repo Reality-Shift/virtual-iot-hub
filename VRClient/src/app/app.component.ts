@@ -2,10 +2,10 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import 'babylonjs-gui';
 import 'babylonjs-loaders';
-import { Vector2 } from 'babylonjs-loaders';
 import { CustomController } from './models/CustomController';
 import { Scene, Engine, SceneLoader } from 'babylonjs';
 import { IotDeviceUI } from './models/IotDeviceUI';
+import { Vector3, VRExperienceHelper } from 'babylonjs-materials';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
   @ViewChild('canva') canvasEl: ElementRef;
   controllerR: CustomController;
   controllerL: CustomController;
-
+  exp: VRExperienceHelper;
   scene: Scene;
 
   ngOnInit(): void {
@@ -46,7 +46,8 @@ export class AppComponent implements OnInit {
     this.importControllersMeshes();
 
     const exp = this.scene.createDefaultVRExperience({ controllerMeshes: false });
-    // exp.enterVR();
+    this.exp = exp;
+
     exp.onEnteringVR.add((E, S) => {
       E.webVRCamera.onControllersAttachedObservable.add(ED => {
         this.controllerL.initFromController(E.webVRCamera.leftController);
@@ -55,13 +56,13 @@ export class AppComponent implements OnInit {
     });
     // -------------
     engine.runRenderLoop(() => { // Register a render loop to repeatedly render the scene
-      this.scene.render();
       if (this.controllerL) {
         this.controllerL.renderForwardLine();
       }
       if (this.controllerR) {
         this.controllerR.renderForwardLine();
       }
+      this.scene.render();
       //  this.controllerR.renderForwardLine();
       // light2.position = camera.position.clone();
     });
@@ -79,7 +80,12 @@ export class AppComponent implements OnInit {
         sc.filter(s => s.name === 'trigger')[1],
         sc.filter(s => s.name === 'track')[1],
         sc.filter(s => s.name === 'body')[1],
-        sc.filter(s => s.name === 'aim')[1], this.scene);
+        sc.filter(s => s.name === 'aim')[1],
+        this.scene,
+        (P: Vector3) => {
+          // console.log('try to teleport');
+          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
+        });
       console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
       console.log('success');
@@ -90,7 +96,12 @@ export class AppComponent implements OnInit {
         sc.filter(s => s.name === 'trigger')[1],
         sc.filter(s => s.name === 'track')[1],
         sc.filter(s => s.name === 'body')[1],
-        sc.filter(s => s.name === 'aim')[1], this.scene);
+        sc.filter(s => s.name === 'aim')[1],
+        this.scene,
+        (P: Vector3) => {
+          // console.log('try to teleport');
+          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
+        });
       this.controllerL.position.y += 5;
       console.log('success');
     }, fail => console.log(fail));

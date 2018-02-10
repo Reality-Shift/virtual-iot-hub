@@ -1,10 +1,12 @@
+import * as fs from 'fs';
+
 export class State {
     public arClient: SocketIO.Socket;
     public vrClients: Map<string, SocketIO.Socket> = new Map<string, SocketIO.Socket>();
 
     private devices: Map<string, any> = new Map<string, any>();
 
-    constructor(private server: SocketIO.Server) {
+    constructor(private server: SocketIO.Server, private name: string) {
     }
 
     public addVrClient(vrClient: SocketIO.Socket) {
@@ -20,6 +22,15 @@ export class State {
         this.devices.forEach(device => {
             console.log(device);
             vrClient.emit('device_created', device);
+        });
+
+        fs.readFile('./room-' + this.name, (err, data) => {
+            if (err != null) {
+                console.log(err);
+            }
+            else {
+                vrClient.emit('map', data);
+            }
         });
     }
 
@@ -67,6 +78,12 @@ export class State {
         });
 
         arClient.on('map', data => {
+            fs.writeFile('./room-' + this.name, data, (err) => {
+                if (err != null) {
+                    console.log(err);
+                }
+            });
+
             this.vrClients.forEach(vrClient => {
                 vrClient.emit('map', data);
             });

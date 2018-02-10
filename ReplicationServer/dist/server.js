@@ -25,7 +25,7 @@ socketConnection.on('connect', socket => {
                     state = states.get(loginData.room);
                 }
                 else {
-                    state = new State_1.State(socketConnection);
+                    state = new State_1.State(socketConnection, loginData.room);
                     states.set(loginData.room, state);
                 }
                 if (loginData.clientType == 'ar') {

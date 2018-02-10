@@ -31,7 +31,7 @@ socketConnection.on('connect', socket => {
                     state = states.get(loginData.room);
                 }
                 else {
-                    state = new State(socketConnection);
+                    state = new State(socketConnection, loginData.room);
                     states.set(loginData.room, state);
                 }
 

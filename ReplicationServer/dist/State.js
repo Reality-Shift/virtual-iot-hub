@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
 class State {
-    constructor(server) {
+    constructor(server, name) {
         this.server = server;
+        this.name = name;
         this.vrClients = new Map();
         this.devices = new Map();
     }
@@ -16,6 +18,14 @@ class State {
         this.devices.forEach(device => {
             console.log(device);
             vrClient.emit('device_created', device);
+        });
+        fs.readFile('./room-' + this.name, (err, data) => {
+            if (err != null) {
+                console.log(err);
+            }
+            else {
+                vrClient.emit('map', data);
+            }
         });
     }
     addArClient(arClient) {
@@ -53,6 +63,11 @@ class State {
             });
         });
         arClient.on('map', data => {
+            fs.writeFile('./room-' + this.name, data, (err) => {
+                if (err != null) {
+                    console.log(err);
+                }
+            });
             this.vrClients.forEach(vrClient => {
                 vrClient.emit('map', data);
             });

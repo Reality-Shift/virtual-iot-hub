@@ -19,7 +19,7 @@
     "express": "^4.16.2"
   },
   "scripts": {
-    "start": "tsc && node dist/server.js",
+    "start": "node dist/server.js",
     "typeorm": "./node_modules/.bin/typeorm -v"
   }
 }

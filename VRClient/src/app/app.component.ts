@@ -6,7 +6,7 @@ import { Vector2, Vector3 } from 'babylonjs-loaders';
 import { CustomController } from './models/CustomController';
 import { Scene, Engine, SceneLoader } from 'babylonjs';
 import { IotDeviceUI } from './models/IotDeviceUI';
-import { Vector3, VRExperienceHelper } from 'babylonjs-materials';
+import { VRExperienceHelper } from 'babylonjs-materials';
 import * as io from 'socket.io-client';
 import { IotDevice } from './models/IotDevice';
 import { Thermometr } from './devices/Thermometr';

@@ -1,19 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const http_1 = require("http");
-const express = require("express");
-const io = require("socket.io");
 const State_1 = require("./State");
-const app = express();
-const server = http_1.createServer(app);
-const port = process.env.PORT || 1337;
-server.listen(port, () => {
-    console.log('Running server on port %s', port);
+var io = require('socket.io')({
+    transports: ['websocket'],
 });
-console.log('Server running at %d', port);
-var socketConnection = io(server);
+io.attach(1337);
 const states = new Map();
-socketConnection.on('connect', socket => {
+io.on('connection', socket => {
+    console.log('connected');
     socket.on('login', loginData => {
         if (typeof (loginData) === typeof ("")) {
             loginData = JSON.parse(loginData);
@@ -25,7 +19,7 @@ socketConnection.on('connect', socket => {
                     state = states.get(loginData.room);
                 }
                 else {
-                    state = new State_1.State(socketConnection, loginData.room);
+                    state = new State_1.State(io, loginData.room);
                     states.set(loginData.room, state);
                 }
                 if (loginData.clientType == 'ar') {

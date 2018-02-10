@@ -1,23 +1,15 @@
-import { createServer, Server } from 'http';
-import * as express from 'express';
-import * as io from 'socket.io'
-import { State } from './State';
+import { State } from "./State";
 
-const app = express();
-const server = createServer(app);
-
-const port = process.env.PORT || 1337;
-server.listen(port, () => {
-    console.log('Running server on port %s', port);
+var io = require('socket.io')({
+	transports: ['websocket'],
 });
 
-console.log('Server running at %d', port);
-
-var socketConnection = io(server);
+io.attach(1337);
 
 const states = new Map<string, State>();
 
-socketConnection.on('connect', socket => {
+io.on('connection', socket => {
+    console.log('connected');
     socket.on('login', loginData => {
         if (typeof (loginData) === typeof ("")) {
             loginData = JSON.parse(loginData);
@@ -31,7 +23,7 @@ socketConnection.on('connect', socket => {
                     state = states.get(loginData.room);
                 }
                 else {
-                    state = new State(socketConnection, loginData.room);
+                    state = new State(io, loginData.room);
                     states.set(loginData.room, state);
                 }
 

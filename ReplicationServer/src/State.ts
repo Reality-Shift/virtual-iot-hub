@@ -82,9 +82,13 @@ export class State {
                 if (err != null) {
                     console.log(err);
                 }
+                else {
+                    console.log('created file ./room-' + this.name);
+                }
             });
 
             this.vrClients.forEach(vrClient => {
+                console.log('emit map for ' + data.id)
                 vrClient.emit('map', data);
             });
         });

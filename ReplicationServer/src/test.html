@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <script src="socket.io.js"></script>
     <script>
-        var socket = io('https://mrhackreplication.azurewebsites.net/');
+        var socket = io('ws://localhost:1337');
         socket.on('connect', data => console.log(data));
     </script>
 </head>

@@ -65,6 +65,16 @@ export class AppComponent implements OnInit {
         }
       });
 
+      socketConnection.on('device_deleted', data => {
+        if (data != null && data.name != null) {
+          const device = this.devices.get(data.name);
+          if (device != null) {
+            device.dispose();
+            this.devices.delete(data.name);
+          }
+        }
+      });
+
       socketConnection.on('device_data', data => {
         console.log(data);
 
@@ -81,11 +91,6 @@ export class AppComponent implements OnInit {
         }
       });
 
-      socketConnection.on('device_deleted', data => {
-        if (data != null && data.name != null) {
-          this.devices.delete(data.name);
-        }
-      });
     });
 
     // Add lights to the scene

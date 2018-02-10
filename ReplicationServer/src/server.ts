@@ -1,11 +1,20 @@
 import { State } from "./State";
-
+import * as express from 'express';
+import * as file from 'fs';
 var io = require('socket.io')({
-	transports: ['websocket'],
+    transports: ['websocket'],
 });
 
 io.attach(1337);
 
+const app = express()
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+app.use(express.static('public'))
+app.listen(4567);
 const states = new Map<string, State>();
 
 io.on('connection', socket => {
@@ -14,7 +23,7 @@ io.on('connection', socket => {
         if (typeof (loginData) === typeof ("")) {
             loginData = JSON.parse(loginData);
         }
-        
+
         if (loginData != null && loginData.room != null) {
             var state: State;
 

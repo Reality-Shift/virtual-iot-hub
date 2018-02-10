@@ -6,7 +6,7 @@ import { Vector2, Vector3 } from 'babylonjs-loaders';
 import { CustomController } from './models/CustomController';
 import { Scene, Engine, SceneLoader } from 'babylonjs';
 import { IotDeviceUI } from './models/IotDeviceUI';
-import { VRExperienceHelper } from 'babylonjs-materials';
+import { VRExperienceHelper, Color3, CustomMaterial } from 'babylonjs-materials';
 import * as io from 'socket.io-client';
 import { IotDevice } from './models/IotDevice';
 import { Thermometr } from './devices/Thermometr';
@@ -24,6 +24,8 @@ export class AppComponent implements OnInit {
   exp: VRExperienceHelper;
   scene: Scene;
   guiRoot: BABYLON.GUI.AdvancedDynamicTexture;
+  room: BABYLON.Mesh;
+  loader: BABYLON.AssetsManager;
 
   devices: Map<string, IotDevice> = new Map<string, IotDevice>();
 
@@ -37,7 +39,9 @@ export class AppComponent implements OnInit {
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), this.scene);
     camera.attachControl(canvas, true);
 
-    const socketConnection = io('https://mrhackreplication.azurewebsites.net/');
+    this.loader = new BABYLON.AssetsManager(this.scene);
+
+    const socketConnection = io('ws://10.129.14.178:1337');
 
     socketConnection.on('connect', () => {
       console.log('connected');
@@ -91,16 +95,48 @@ export class AppComponent implements OnInit {
         }
       });
 
+      socketConnection.on('map', data => {
+        if (typeof (data) === typeof ('')) {
+          data = JSON.parse(data);
+        }
+
+        if (this.room != null) {
+          this.room.dispose();
+        }
+
+        console.log('updated mesh');
+
+        this.room = new BABYLON.Mesh('room', this.scene);
+
+        const vertexData = new BABYLON.VertexData();
+
+        var normals: Array<number> = new Array<number>();
+        BABYLON.VertexData.ComputeNormals(data.vertices, data.indices, normals);
+
+        vertexData.positions = data.vertices;
+        vertexData.indices = data.indices;
+        vertexData.normals = normals;
+
+        vertexData.indices = vertexData.indices.reverse();
+
+        vertexData.applyToMesh(this.room);
+        const cstrMat = new CustomMaterial('lol', this.scene);
+        cstrMat.wireframe = true;
+        // this.room.material = cstrMat;
+      });
     });
 
     // Add lights to the scene
-    const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1, 1, 0), this.scene);
-    const light2 = new BABYLON.PointLight('light2', new BABYLON.Vector3(0, 0, 0), this.scene);
-    light2.position.y += 4;
+    const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 0.1, 0), this.scene);
+    light1.diffuse = new Color3(0.1, 0.1, 0.1);
+
+    const light2 = new BABYLON.DirectionalLight('light2', new BABYLON.Vector3(1, 1, 0), this.scene);
+    light2.diffuse = new Color3(1, 1, 1);
+
     // Add and manipulate meshes in the scene
     const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { diameter: 2 }, this.scene);
     sphere.position.y += 20;
-    const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, this.scene);
+    // const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, this.scene);
 
     this.importControllersMeshes();
 
@@ -149,7 +185,7 @@ export class AppComponent implements OnInit {
         this.scene,
         P => {
           // console.log('try to teleport');
-          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
+          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 0.3, 0)));
         },
         M => true);
       console.log(sc.map(S => S.name));
@@ -166,7 +202,7 @@ export class AppComponent implements OnInit {
         this.scene,
         P => {
           // console.log('try to teleport');
-          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
+          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 0.3, 0)));
         },
         M => true);
       this.controllerL.position.y += 5;

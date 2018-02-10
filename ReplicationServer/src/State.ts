@@ -81,7 +81,7 @@ export class State {
 
         arClient.on('map', data => {
             console.log('MAP DATA');
-            console.log(data);
+            
             fs.writeFile('./public/room-' + this.name, JSON.stringify(data), (err) => {
                 if (err != null) {
                     console.log(err);

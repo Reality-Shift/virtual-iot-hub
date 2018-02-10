@@ -1,5 +1,5 @@
 import 'babylonjs';
-import { DeviceValueData } from './DeviceValueData';
+import { IotDeviceData } from './IotDeviceData';
 
 
 export class IotDeviceUI {
@@ -16,7 +16,7 @@ export class IotDeviceUI {
     private size: BABYLON.Vector2 = new BABYLON.Vector2(200, 150);
     private offset: BABYLON.Vector2 = new BABYLON.Vector2(0, 0);
 
-    private values: Map<string, DeviceValueData> = new Map<string, DeviceValueData>();
+    private values: Map<string, IotDeviceData> = new Map<string, IotDeviceData>();
 
     public set name(name: string) {
         this.deviceName = name;
@@ -39,7 +39,7 @@ export class IotDeviceUI {
         this.updateLayout();
     }
 
-    public setDeviceData(deviceData: DeviceValueData) {
+    public setDeviceData(deviceData: IotDeviceData) {
         this.values.set(deviceData.type, deviceData);
         this.updateLayout();
     }

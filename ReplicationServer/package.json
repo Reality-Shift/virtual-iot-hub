@@ -1,0 +1,25 @@
+{
+  "name": "typeorm-typescript-example",
+  "version": "0.0.1",
+  "description": "Example how to use TypeORM with TypeScript.",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "author": {
+    "name": "Umed Khudoiberdiev",
+    "email": "pleerock.me@gmail.com"
+  },
+  "devDependencies": {
+    "typescript": "^2.7.1",
+    "@types/node": "^8.9.1",
+    "@types/express": "^4.11.1",
+    "@types/socket.io": "^1.4.31"
+  },
+  "dependencies": {
+    "socket.io": "^2.0.4",
+    "express": "^4.16.2"
+  },
+  "scripts": {
+    "start": "tsc && node dist/server.js",
+    "typeorm": "./node_modules/.bin/typeorm -v"
+  }
+}

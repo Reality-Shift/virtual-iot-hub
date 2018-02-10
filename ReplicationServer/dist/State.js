@@ -19,12 +19,14 @@ class State {
             console.log(device);
             vrClient.emit('device_created', device);
         });
-        fs.readFile('./room-' + this.name, (err, data) => {
+        fs.readFile('./public/room-' + this.name, (err, data) => {
             if (err != null) {
                 console.log(err);
             }
             else {
-                vrClient.emit('map', data);
+                console.log(data.length);
+                console.log('send to client');
+                vrClient.emit('map', data.toString());
             }
         });
     }
@@ -63,7 +65,9 @@ class State {
             });
         });
         arClient.on('map', data => {
-            fs.writeFile('./room-' + this.name, data, (err) => {
+            console.log('MAP DATA');
+            console.log(data);
+            fs.writeFile('./public/room-' + this.name, JSON.stringify(data), (err) => {
                 if (err != null) {
                     console.log(err);
                 }
@@ -73,7 +77,7 @@ class State {
             });
             this.vrClients.forEach(vrClient => {
                 console.log('emit map for ' + data.id);
-                vrClient.emit('map', data);
+                vrClient.emit('map', JSON.stringify(data));
             });
         });
         arClient.on('disconnect', () => {

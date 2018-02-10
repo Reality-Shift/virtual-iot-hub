@@ -6,6 +6,7 @@ import { Vector2, Vector3 } from 'babylonjs-loaders';
 import { CustomController } from './models/CustomController';
 import { Scene, Engine, SceneLoader } from 'babylonjs';
 import { IotDeviceUI } from './models/IotDeviceUI';
+import { Vector3, VRExperienceHelper } from 'babylonjs-materials';
 import * as io from 'socket.io-client';
 import { IotDevice } from './models/IotDevice';
 import { Thermometr } from './devices/Thermometr';
@@ -20,7 +21,7 @@ export class AppComponent implements OnInit {
   @ViewChild('canva') canvasEl: ElementRef;
   controllerR: CustomController;
   controllerL: CustomController;
-
+  exp: VRExperienceHelper;
   scene: Scene;
   guiRoot: BABYLON.GUI.AdvancedDynamicTexture;
 
@@ -93,12 +94,14 @@ export class AppComponent implements OnInit {
     light2.position.y += 4;
     // Add and manipulate meshes in the scene
     const sphere = BABYLON.MeshBuilder.CreateSphere('sphere', { diameter: 2 }, this.scene);
+    sphere.position.y += 20;
     const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, this.scene);
 
     this.importControllersMeshes();
 
     const exp = this.scene.createDefaultVRExperience({ controllerMeshes: false });
-    // exp.enterVR();
+    this.exp = exp;
+
     exp.onEnteringVR.add((E, S) => {
       E.webVRCamera.onControllersAttachedObservable.add(ED => {
         this.controllerL.initFromController(E.webVRCamera.leftController);
@@ -107,7 +110,20 @@ export class AppComponent implements OnInit {
     });
     // -------------
     engine.runRenderLoop(() => { // Register a render loop to repeatedly render the scene
+      if (this.controllerL) {
+        this.controllerL.renderForwardLine();
+      }
+      if (this.controllerR) {
+        this.controllerR.renderForwardLine();
+      }
       this.scene.render();
+      if (this.controllerL) {
+        this.controllerL.disposeLines();
+      }
+      if (this.controllerR) {
+        this.controllerR.disposeLines();
+      }
+      //  this.controllerR.renderForwardLine();
       // light2.position = camera.position.clone();
     });
     window.addEventListener('resize', () => { // Watch for browser/canvas resize events
@@ -116,15 +132,38 @@ export class AppComponent implements OnInit {
   }
 
   private importControllersMeshes() {
+
+
+    // trigger,trigger,track,track,body,body
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerR.obj', this.scene, sc => {
-      this.controllerR = new CustomController(sc[1], sc[3], sc[5]);
+      this.controllerR = new CustomController(
+        sc.filter(s => s.name === 'trigger')[1],
+        sc.filter(s => s.name === 'track')[1],
+        sc.filter(s => s.name === 'body')[1],
+        sc.filter(s => s.name === 'aim')[1],
+        this.scene,
+        P => {
+          // console.log('try to teleport');
+          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
+        },
+        M => true);
       console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
       console.log('success');
     }, fail => console.log(fail));
 
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerL.obj', this.scene, sc => {
-      this.controllerL = new CustomController(sc[1], sc[3], sc[5]);
+      this.controllerL = new CustomController(
+        sc.filter(s => s.name === 'trigger')[1],
+        sc.filter(s => s.name === 'track')[1],
+        sc.filter(s => s.name === 'body')[1],
+        sc.filter(s => s.name === 'aim')[1],
+        this.scene,
+        P => {
+          // console.log('try to teleport');
+          this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
+        },
+        M => true);
       this.controllerL.position.y += 5;
       console.log('success');
     }, fail => console.log(fail));

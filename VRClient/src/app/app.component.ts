@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), this.scene);
     camera.attachControl(canvas, true);
 
-    const socketConnection = io('http://localhost:1337');
+    const socketConnection = io('https://mrhackreplication.azurewebsites.net/');
 
     socketConnection.on('connect', () => {
       console.log('connected');

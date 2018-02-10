@@ -16,7 +16,8 @@ export class CustomController {
         private body: AbstractMesh,
         private aim: AbstractMesh,
         private scene: Scene,
-        private teleportFunc: any
+        private teleportFunc: (position: Vector3) => void,
+        private teleportPredicate: (mesh: AbstractMesh) => boolean
     ) {
         this.attacher = MeshBuilder.CreateBox('attacher', { size: 0.1 });
         body.parent = this.attacher;
@@ -28,7 +29,7 @@ export class CustomController {
             // this.attacher.rotate(Vector3.Forward(), Math.PI);
         }, 500);
         this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
-            points: [Vector3.Zero(), Vector3.Up()],
+            points: [Vector3.Zero(), Vector3.Zero()],
             updatable: true, instance: this.lines
         });
         this.lines.color = Color3.Red();
@@ -73,35 +74,40 @@ export class CustomController {
     }
 
     teleport() {
-        const hit = this.getHit();
+        const hit = this.getHit(M => this.teleportPredicate(M) && M.name !== 'reycastSph');
         if (hit.hit) {
             this.teleportFunc(hit.pickedPoint);
         }
     }
-    getHit(): PickingInfo {
+    getHit(teleportFunc: (position: AbstractMesh) => boolean): PickingInfo {
         const direction = this.raySph2.absolutePosition.subtract(this.raySph.absolutePosition);
         const ray = new Ray(this.raySph2.absolutePosition, direction);
-        return this.scene.pickWithRay(ray, m => m.name !== 'reycastSph');
+        return this.scene.pickWithRay(ray, M => teleportFunc(M));
     }
     renderForwardLine(): void {
         if (!this.pressed) {
-            this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
-                points: [this.raySph.absolutePosition, this.raySph2.absolutePosition],
-                updatable: true, instance: this.lines
-            });
+            this.drawShort();
             return;
         }
-        const hit = this.getHit();
+        const hit = this.getHit(m => m.name !== 'reycastSph');
         if (hit.hit) {
             this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
                 points: [this.raySph.absolutePosition, hit.pickedPoint],
-                updatable: true, instance: this.lines
+                updatable: false, instance: null
             });
-        } else {
-            this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
-                points: [this.raySph.absolutePosition, this.raySph2.absolutePosition],
-                updatable: true, instance: this.lines
-            });
-        }
+            this.lines.color = Color3.Red();
+        } else { this.drawShort(); }
+    }
+
+    private drawShort() {
+        this.lines = BABYLON.MeshBuilder.CreateLines('lines', {
+            points: [this.raySph.absolutePosition, this.raySph2.absolutePosition],
+            updatable: false, instance: null
+        });
+        this.lines.color = Color3.Red();
+    }
+
+    public disposeLines() {
+        this.lines.dispose();
     }
 }

@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
     const engine = new Engine(canvas, true);
 
     this.scene = new BABYLON.Scene(engine);
-    this.scene.debugLayer.show();
+    // this.scene.debugLayer.show();
     const guiRoot = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui');
     // Add a camera to the scene and attach it to the canvas
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), this.scene);
@@ -63,6 +63,12 @@ export class AppComponent implements OnInit {
         this.controllerR.renderForwardLine();
       }
       this.scene.render();
+      if (this.controllerL) {
+        this.controllerL.disposeLines();
+      }
+      if (this.controllerR) {
+        this.controllerR.disposeLines();
+      }
       //  this.controllerR.renderForwardLine();
       // light2.position = camera.position.clone();
     });
@@ -82,10 +88,11 @@ export class AppComponent implements OnInit {
         sc.filter(s => s.name === 'body')[1],
         sc.filter(s => s.name === 'aim')[1],
         this.scene,
-        (P: Vector3) => {
+        P => {
           // console.log('try to teleport');
           this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
-        });
+        },
+        M => true);
       console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
       console.log('success');
@@ -98,10 +105,11 @@ export class AppComponent implements OnInit {
         sc.filter(s => s.name === 'body')[1],
         sc.filter(s => s.name === 'aim')[1],
         this.scene,
-        (P: Vector3) => {
+        P => {
           // console.log('try to teleport');
           this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
-        });
+        },
+        M => true);
       this.controllerL.position.y += 5;
       console.log('success');
     }, fail => console.log(fail));

@@ -1,11 +1,13 @@
 import 'babylonjs';
 import { IotDeviceData } from './IotDeviceData';
+import { GUI } from 'babylonjs';
 
 
 export class IotDeviceUI {
     private contentContainer: BABYLON.GUI.Rectangle;
     private titleContainer: BABYLON.GUI.Rectangle;
     private valuesContainer: BABYLON.GUI.Rectangle;
+    private selectionContainer: GUI.Rectangle;
 
     private nameText: BABYLON.GUI.TextBlock;
     private typeText: BABYLON.GUI.TextBlock;
@@ -63,6 +65,28 @@ export class IotDeviceUI {
         this.titleContainer.thickness = 0;
         this.titleContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
         this.contentContainer.addControl(this.titleContainer);
+
+
+        this.selectionContainer = new GUI.Rectangle();
+        this.selectionContainer.background = new BABYLON.Color4(255, 255, 255, 0.5).toHexString();
+        this.selectionContainer.width = 1;
+        this.selectionContainer.height = '20px';
+        this.selectionContainer.thickness = 0;
+        this.selectionContainer.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        this.contentContainer.addControl(this.selectionContainer);
+
+        const button1 = BABYLON.GUI.Button.CreateSimpleButton('but1', 'Click Me');
+        button1.width = 0.2;
+        button1.height = '40px';
+        button1.color = 'white';
+        button1.cornerRadius = 20;
+        button1.background = 'green';
+        button1.onPointerUpObservable.add(() => {
+            console.log('logaer');
+        });
+        this.selectionContainer.addControl(button1);
+
+
 
         // add name to the title container
         this.nameText = this.createTextBox('');

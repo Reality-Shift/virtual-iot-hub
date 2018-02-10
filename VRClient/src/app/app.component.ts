@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
     const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -2), this.scene);
     camera.attachControl(canvas, true);
 
-    const socketConnection = io('https://mrhackreplication.azurewebsites.net/');
+    const socketConnection = io('http://10.129.14.74:1337/');
 
     socketConnection.on('connect', () => {
       console.log('connected');
@@ -152,9 +152,7 @@ export class AppComponent implements OnInit {
           this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
         },
         M => true);
-      console.log(sc.map(S => S.name));
       this.controllerR.position.y += 10;
-      console.log('success');
     }, fail => console.log(fail));
 
     SceneLoader.ImportMesh('', './assets/controllers/', 'controllerL.obj', this.scene, sc => {
@@ -165,12 +163,10 @@ export class AppComponent implements OnInit {
         sc.filter(s => s.name === 'aim')[1],
         this.scene,
         P => {
-          // console.log('try to teleport');
           this.exp.currentVRCamera.position.copyFrom(P.add(new BABYLON.Vector3(0, 4, 0)));
         },
         M => true);
       this.controllerL.position.y += 5;
-      console.log('success');
     }, fail => console.log(fail));
   }
 }

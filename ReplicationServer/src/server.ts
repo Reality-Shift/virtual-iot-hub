@@ -19,16 +19,20 @@ const states = new Map<string, State>();
 
 socketConnection.on('connect', socket => {
     socket.on('login', loginData => {
-        console.log(loginData);
-        if (loginData !== null && loginData.room !== null) {
+        if (typeof (loginData) === typeof ("")) {
+            loginData = JSON.parse(loginData);
+        }
+        
+        if (loginData != null && loginData.room != null) {
             var state: State;
 
-            if (loginData.clientType !== null) {
+            if (loginData.clientType != null) {
                 if (states.has(loginData.room)) {
                     state = states.get(loginData.room);
                 }
                 else {
                     state = new State(socketConnection);
+                    states.set(loginData.room, state);
                 }
 
                 if (loginData.clientType == 'ar') {
@@ -39,11 +43,11 @@ socketConnection.on('connect', socket => {
                 }
             }
             else {
-                socket.emit('error', {err: 'unable to login, client type must be specified'});
+                socket.emit('error', { err: 'unable to login, client type must be specified' });
             }
         }
         else {
-            socket.emit('error', {err: 'unable to login'});
+            socket.emit('error', { err: 'unable to login' });
         }
     });
 })
